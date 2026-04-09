@@ -19,6 +19,11 @@ equivalent)*/
 #include <string.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+
+#include <sys/poll.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <vector>
 #define Buffer_size 4096
 
 class server
@@ -34,12 +39,14 @@ private:
         std::string password;
         int socketfd;
         int port;
-        int backlog;
+        int backlog;// this is the nember of the client listen for 
         int client_fd;
+        int Maxclient_fd = 0;
         socklen_t server_addrlen;
         socklen_t client_addrlen;
         struct sockaddr_in server_addr;
         struct sockaddr_in client_addr;
+        nfds_t nfds = 0;
 public:
     server();
     server(int hostname, int type, int protocole);
@@ -69,6 +76,10 @@ public:
 
     //wating for requist 
     void waiting_client_responce(int socketfd, struct sockaddr_in *client_addr, socklen_t client_addrlen, int listinign);
+    
+    //// all about the client or as we call it in network the host
+    /*gethostbyname API */ //(know all about the client and ) ## to know this is not for the work of the server but it's for the configuration and the flixebility 
+
     //3-accepte the client
     /* connect, accept*/
     int server_accept(int socketfd, struct sockaddr_in *client_addr, socklen_t client_addrlen, int listinign);
@@ -78,10 +89,16 @@ public:
 
     //handle the send and recive 
     /*send, recv, signal*/
-    int snd_recv(int client_fd);
+    void snd_recv(int client_fd);
+
+
     //handle multiple clients
     /*poll*/
 
+    int connect_multiple_client(struct pollfd *pollfds, int Maxclient_fd, nfds_t nfds)
+    {
+
+    }
 
     //manage connection new client connect/disconnect 
 
