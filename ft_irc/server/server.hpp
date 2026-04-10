@@ -42,6 +42,8 @@ private:
         int backlog;// this is the nember of the client listen for 
         int client_fd;
         int Maxclient_fd = 0;
+        bool is_multiple;        // flag to track mode
+        int client_count;
         socklen_t server_addrlen;
         socklen_t client_addrlen;
         struct sockaddr_in server_addr;
@@ -76,6 +78,7 @@ public:
 
     //wating for requist 
     void waiting_client_responce(int socketfd, struct sockaddr_in *client_addr, socklen_t client_addrlen, int listinign);
+    int check_passwword(int client_fd);
     
     //// all about the client or as we call it in network the host
     /*gethostbyname API */ //(know all about the client and ) ## to know this is not for the work of the server but it's for the configuration and the flixebility 
@@ -94,13 +97,13 @@ public:
 
     //handle multiple clients
     /*poll*/
+    //manage connection new client connect/disconnect 
 
     int connect_multiple_client(struct pollfd *pollfds, int Maxclient_fd, nfds_t nfds)
     {
 
     }
 
-    //manage connection new client connect/disconnect 
 
     //4-close the server 
     /*close*/
