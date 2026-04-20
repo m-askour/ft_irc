@@ -59,33 +59,24 @@ std::string bot::getClientName(int socket_fd)
     getpeername(socket_fd, (struct sockaddr*)&addr, &addr_len);
     return std::string(inet_ntoa(addr.sin_addr)); // returns IP like "192.168.1.1"
 }
-std::string calculate(std::string input)
-{
-    int result = 0;
-    int num1 = 0;
-    int num2 = 0;
-    for (int i = 0; i < input.size(); i++)
-    {
-        num1 = ft_atoi(input[1]);
-        num2 = ft_atoi(input[3]);
-        char c = input[2];
 
-    }
-        switch (c)
-        {
-        case '+': result = add(num1, num2);
-            /* code */
-            break;
-        case '-': result = subtract(num1, num2);
-            break;
-        case '*': result = multiply(num1, num2);
-            break;
-        case '/': result = divide(num1, num2);
-            break;
-        default: result = 0;
-            break;
-        }
+std::string calculate(std::string input) {
+
     
+    if (input.size() < 3) return "0";
+
+    int num1 = input[0] - '0';
+    char op  = input[1];
+    int num2 = input[2] - '0';
+    int result = 0;
+
+    switch (op) {
+        case '+': result = num1 + num2; break;
+        case '-': result = num1 - num2; break;
+        case '*': result = num1 * num2; break;
+        case '/': result = (num2 != 0) ? num1 / num2 : 0; break;
+        default:  return "Error";
+    }
     char c = result + '0';
     std::string s(1,c);
     return (s);
