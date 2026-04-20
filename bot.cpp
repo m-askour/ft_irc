@@ -51,14 +51,7 @@ int divide(int a, int b) {
     }
     return a / b;
 }
-std::string bot::getClientName(int socket_fd)
-{
-    struct sockaddr_in addr;
-    socklen_t addr_len = sizeof(addr);
 
-    getpeername(socket_fd, (struct sockaddr*)&addr, &addr_len);
-    return std::string(inet_ntoa(addr.sin_addr)); // returns IP like "192.168.1.1"
-}
 
 std::string calculate(std::string input) {
 
@@ -84,32 +77,36 @@ std::string calculate(std::string input) {
 }
 bool bot::keywordMatching(std::string &input, std::string &response)
 {
-    // jockes keword
-        /*1- chekc for the quastions*/
+
     if (input.find('?') != std::string::npos)
     {
         response = "Oh, good question… 🤔mmmmm… I don’t know the answer";
         return true;
     }
     // hello and hi and hey
-    else if (input.find("HI")|| input.find("Hi") || input.find("hi") || input.find("Hello")|| input.find("HELLO") || input.find("hello") || input.find("hey") || )
+    else if (input.find("HI")|| input.find("Hi") || input.find("hi") || input.find("Hello")|| input.find("HELLO") || input.find("hello") || input.find("hey"))
     {
         response = "Hi";
         return true;
     }    
-    //help (what's chatbot can do)
     else if (input.find("healp"))
     {
         response = "Hi I'm chat bot i can i can unser ur quastion or talck smal conversation";
         return true;
     }
-    //what's my name
-    else if (input.find("What's my name"))
+    else if (input.find("What's my name") != std::string::npos)
     {
-        response = "ur name is " + getClientName(user);
+        auto it = std::find(history.begin(), history.end(), "Bob");
+        if(it != history.end())
+        {
+            std::cout << "Your name is " << *it << std::endl;
+        }
+        else
+        {
+            std::cout << "can u tell me ur name agin" << std::endl;
+        }
         return true;
-    }    
-    //calcul simple
+    } 
     else if (input.find("+") != std::string::npos || input.find("-") != std::string::npos || input.find("/") != std::string::npos || input.find("*") != std::string::npos)
     {
         response = calculate(input);

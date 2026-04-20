@@ -3,7 +3,11 @@
 #include <iostream>
 #include <sys/socket.h>
 #include <string>
+#include <algorithm>
 #include <vector>
+
+///  dont forget to inherit from the server to takck the name of server and the name of the client to know the name of each client 
+
 class bot
 {
 private:
@@ -20,7 +24,6 @@ public:
 
     void GetUserInput();
     std::string processinput(std::string &input);
-    std::string getClientName(int socket_fd);
     bool keywordMatching(std::string &input, std::string &response);
     std::string failbackResponse();
 };
