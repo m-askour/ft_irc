@@ -1,0 +1,128 @@
+#include "bot.hpp"
+bot::bot(): input(""), response("")
+{
+
+}
+bot::bot(const bot &other): input(other.input), response(other.response)
+{
+
+}
+bot &bot::operator=(const bot &other)
+{
+    if (this != &other)
+    {
+        this->input = other.input;
+        this->response = other.response;
+    }
+    return *this;
+}
+bot::~bot()
+{}
+
+void bot::GetUserInput()
+{
+    std::string input;
+    while (true)
+    {
+        std::getline(std::cin, input);//this to read the 
+        //when there is input it weell be processing first 
+        std::cout <<  processinput(input) << std::endl;        
+    }
+}
+std::string  bot::processinput(std::string &input)
+{
+
+        history.push_back(input);
+        //check what in thhis input
+        std::string response;
+        if (keywordMatching(input, response))
+            return response;
+        return failbackResponse();
+   
+    //generate the response 
+}
+int add(int a, int b) { return a + b; }
+int subtract(int a, int b) { return a - b; }
+int multiply(int a, int b) { return a * b; }
+int divide(int a, int b) {
+    if (b == 0) {
+        std::cout << "Error: Division by zero!" << std::endl;
+        return 0;
+    }
+    return a / b;
+}
+
+
+std::string calculate(std::string input) {
+
+    
+    if (input.size() < 3) return "0";
+
+    int num1 = input[0] - '0';
+    char op  = input[1];
+    int num2 = input[2] - '0';
+    int result = 0;
+
+    switch (op) {
+        case '+': result = num1 + num2; break;
+        case '-': result = num1 - num2; break;
+        case '*': result = num1 * num2; break;
+        case '/': result = (num2 != 0) ? num1 / num2 : 0; break;
+        default:  return "Error";
+    }
+    char c = result + '0';
+    std::string s(1,c);
+    return (s);
+    
+}
+bool bot::keywordMatching(std::string &input, std::string &response)
+{
+
+    if (input.find('?') != std::string::npos)
+    {
+        response = "Oh, good question… 🤔mmmmm… I don’t know the answer";
+        return true;
+    }
+    // hello and hi and hey
+    else if (input.find("HI")|| input.find("Hi") || input.find("hi") || input.find("Hello")|| input.find("HELLO") || input.find("hello") || input.find("hey"))
+    {
+        response = "Hi";
+        return true;
+    }    
+    else if (input.find("healp"))
+    {
+        response = "Hi I'm chat bot i can i can unser ur quastion or talck smal conversation";
+        return true;
+    }
+    else if (input.find("What's my name") != std::string::npos)
+    {
+        auto it = std::find(history.begin(), history.end(), "Bob");
+        if(it != history.end())
+        {
+            std::cout << "Your name is " << *it << std::endl;
+        }
+        else
+        {
+            std::cout << "can u tell me ur name agin" << std::endl;
+        }
+        return true;
+    } 
+    else if (input.find("+") != std::string::npos || input.find("-") != std::string::npos || input.find("/") != std::string::npos || input.find("*") != std::string::npos)
+    {
+        response = calculate(input);
+        return true;
+    } 
+    else
+    {
+        response = "I’m not \
+        Google or ChatGPT…  \
+        I actually think before answering 😏";
+        return true;
+    }
+    return false;
+}
+std::string bot::failbackResponse()
+{
+    //this is the output responce what the boot say and whatv the bot do
+    return "I don't understand what do u main ";
+}
