@@ -78,7 +78,7 @@ public:
 
     //wating for requist 
     void waiting_client_responce(int socketfd, struct sockaddr_in *client_addr, socklen_t client_addrlen, int listinign);
-    int check_passwword(int client_fd);
+    int check_password(int client_fd);
     
     //// all about the client or as we call it in network the host
     /*gethostbyname API */ //(know all about the client and ) ## to know this is not for the work of the server but it's for the configuration and the flixebility 

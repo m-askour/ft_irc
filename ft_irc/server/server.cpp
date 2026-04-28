@@ -34,7 +34,8 @@ void server::start_server(int port, std::string password)
     socket_add(&server_addr, port);
     server_bind(socketfd, &server_addr);
     int listeninig = server_listen(socketfd);
-    waiting_client_responce(socketfd, &client_addr, client_addrlen, listeninig);//this logic just for one client 
+    this->listining = listeninig;
+    // waiting_client_responce(socketfd, &client_addr, client_addrlen, listeninig);//this logic just for one client 
     struct pollfd pollfds[Maxclient_fd];
 
     
@@ -44,8 +45,7 @@ void server::start_server(int port, std::string password)
     connect_multiple_client(pollfds,Maxclient_fd, 1);//this for multiple client use pool
     server_close(socketfd);
 }
-int server::check_passwword(int clinet_fd)
-{
+int server::check_password(int client_fd) {
     char buff[Buffer_size];
     memset(buff, 0, Buffer_size);
     send(client_fd, "Password", 10, 0);
@@ -65,7 +65,7 @@ int server::socket_creat(int hostname, int type, int protocole)
     if (socketfd == -1)
     {
         std::cout << "can't creat a socket" << std::endl;
-        exit(-1);
+        return(-1);
     }
     else
     {
@@ -94,7 +94,7 @@ int server::server_bind(int socketfd, struct sockaddr_in *src)
     if (n_bind < 0)
     {
         std::cout << "error binding can't successe" << std::endl;
-        exit(1);
+        return(-1);
     }
     else
     {
@@ -111,7 +111,7 @@ int server::server_listen(int socketfd)
     if (n_listen < 0)
     {
         std::cout << "error listitnig can't successe";
-        exit(1);
+        return(-1);
     }
     else
     {
@@ -152,11 +152,11 @@ int server::server_accept(int socketfd, struct sockaddr_in *client_addr, socklen
 {
     int client_fd;
     client_fd = accept(socketfd, (sockaddr *)&client_addr, &client_addrlen);
-    if (client_fd < 0 && check_passwword(client_fd))
+    if (client_fd < 0 || !check_password(client_fd))
     {
         std::cout << "error accepting client connection can't successe";
         close(socketfd);
-        exit(1);
+        return(-1);
     }
     else
     {
@@ -251,7 +251,7 @@ int server::connect_multiple_client(struct pollfd *pollfds, int Maxclient_fd, nf
 {
     // Maxclient_fd = NUM_FDS; i don't know this what is do 
     fd_set fd_creat;
-    pollfds-> fd = listining;
+    pollfds->fd = socketfd;
     pollfds-> events = POLLIN;
     pollfds->revents = 0;
     int numfds = 1;
@@ -268,11 +268,11 @@ int server::connect_multiple_client(struct pollfd *pollfds, int Maxclient_fd, nf
         for(size_t i = 0; i < nfds; i++)
         {
             int sock = pollfds[i].fd;
-            if (pollfds[i].revents && POLL_IN)
+            if (pollfds[i].revents & POLLIN)
             {
                 //new client
-                int new_client = accept(listining, nullptr, nullptr);
-                if(check_passwword(new_client))
+                int new_client = accept(socketfd, (struct sockaddr *)&client_addr, &client_addrlen);
+                if(!check_password(new_client))
                 {
                     close(new_client);
                 }
@@ -280,7 +280,7 @@ int server::connect_multiple_client(struct pollfd *pollfds, int Maxclient_fd, nf
                 {
                     //set the client 
                     pollfds[nfds].fd = new_client;
-                    pollfds[nfds].events = POLL_IN;
+                    pollfds[nfds].events = POLLIN;
                     nfds++;
                 }
             }
@@ -288,7 +288,7 @@ int server::connect_multiple_client(struct pollfd *pollfds, int Maxclient_fd, nf
             {
                 char buff[Buffer_size];
                 memset(buff, 0, 4096);
-            int receive_massage = recv(client_fd, buff, Buffer_size, 0);
+            int receive_massage = recv(sock, buff, Buffer_size, 0);
 
                 //client disconnectes if it's not resice nutiong
                 if (receive_massage <= 0)
@@ -345,7 +345,7 @@ int server::server_close(int fd)
     if (n_close < 0)
     {
         std::cout << "error of the close " << std::endl;
-        exit(1);
+        return(-1);
     }
     else
     {

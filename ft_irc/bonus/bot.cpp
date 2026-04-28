@@ -18,7 +18,81 @@ bot &bot::operator=(const bot &other)
 }
 bot::~bot()
 {}
-
+bool bot::connectToServer(std::string ip, int port, std::string password)
+{
+    this->server_ip = ip;
+    this->server_port = port;
+    this->server_password = password;
+    
+    // Create socket
+    socketfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (socketfd < 0)
+    {
+        std::cout << "Error creating socket" << std::endl;
+        return false;
+    }
+    
+    // Set server address
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(port);
+    server_addr.sin_addr.s_addr = inet_addr(ip.c_str());
+    
+    // Connect to server
+    if (connect(socketfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
+    {
+        std::cout << "Error connecting to server" << std::endl;
+        return false;
+    }
+    
+    std::cout << "Connected to server at " << ip << ":" << port << std::endl;
+    
+    // Send password
+    char buff[1024];
+    memset(buff, 0, 1024);
+    
+    // Receive password prompt
+    recv(socketfd, buff, 1024, 0);
+    std::cout << buff << std::endl;
+    
+    // Send password
+    send(socketfd, password.c_str(), password.length(), 0);
+    
+    return true;
+}
+void bot::communicateWithServer()
+{
+    char buff[1024];
+    std::string userInput;
+    
+    while (true)
+    {
+        std::cout << "You: ";
+        std::getline(std::cin, userInput);
+        
+        if (userInput == "exit")
+        {
+            std::cout << "Disconnecting..." << std::endl;
+            break;
+        }
+        
+        // Process input through bot logic
+        std::string botResponse = processinput(userInput);
+        
+        // Send to server
+        send(socketfd, botResponse.c_str(), botResponse.length(), 0);
+        std::cout << "Bot: " << botResponse << std::endl;
+        
+        // Receive response from server
+        memset(buff, 0, 1024);
+        int recvd = recv(socketfd, buff, 1024, 0);
+        if (recvd > 0)
+        {
+            std::cout << "Server: " << std::string(buff, recvd) << std::endl;
+        }
+    }
+    
+    close(socketfd);
+}
 void bot::GetUserInput()
 {
     std::string input;
@@ -41,39 +115,46 @@ std::string  bot::processinput(std::string &input)
    
     //generate the response 
 }
-int add(int a, int b) { return a + b; }
-int subtract(int a, int b) { return a - b; }
-int multiply(int a, int b) { return a * b; }
-int divide(int a, int b) {
-    if (b == 0) {
-        std::cout << "Error: Division by zero!" << std::endl;
-        return 0;
-    }
-    return a / b;
-}
+
 
 
 std::string calculate(std::string input) {
-
+    int pos_op = -1;
+    char op;
     
-    if (input.size() < 3) return "0";
-
-    int num1 = input[0] - '0';
-    char op  = input[1];
-    int num2 = input[2] - '0';
+    // Find the operator position
+    for (size_t i = 0; i < input.size(); i++) {
+        if (input[i] == '+' || input[i] == '-' || 
+            input[i] == '*' || input[i] == '/') {
+            pos_op = i;
+            op = input[i];
+            break;
+        }
+    }
+    
+    if (pos_op == -1) return "Invalid format";
+    
+    int num1 = std::stoi(input.substr(0, pos_op));
+    int num2 = std::stoi(input.substr(pos_op + 1));
     int result = 0;
-
+    
     switch (op) {
         case '+': result = num1 + num2; break;
         case '-': result = num1 - num2; break;
         case '*': result = num1 * num2; break;
-        case '/': result = (num2 != 0) ? num1 / num2 : 0; break;
-        default:  return "Error";
+        case '/': if (num2 != 0) {
+                result = num1 / num2;
+            } else {
+                std::cout << "Error: Division by zero!" << std::endl;
+                result = 0;
+            }
+            break;
+        default: return "Error";
     }
+    
     char c = result + '0';
     std::string s(1,c);
     return (s);
-    
 }
 bool bot::keywordMatching(std::string &input, std::string &response)
 {
@@ -84,29 +165,40 @@ bool bot::keywordMatching(std::string &input, std::string &response)
         return true;
     }
     // hello and hi and hey
-    else if (input.find("HI")|| input.find("Hi") || input.find("hi") || input.find("Hello")|| input.find("HELLO") || input.find("hello") || input.find("hey"))
-    {
-        response = "Hi";
-        return true;
-    }    
-    else if (input.find("healp"))
+else if (input.find("HI") != std::string::npos || 
+         input.find("Hi") != std::string::npos || 
+         input.find("hi") != std::string::npos || 
+         input.find("Hello") != std::string::npos ||
+         input.find("hello") != std::string::npos ||
+         input.find("hey") != std::string::npos)
+{
+    response = "Hi";
+    return true;
+}  
+    else if (input.find("help") != std::string::npos)
     {
         response = "Hi I'm chat bot i can i can unser ur quastion or talck smal conversation";
         return true;
     }
     else if (input.find("What's my name") != std::string::npos)
     {
-        auto it = std::find(history.begin(), history.end(), "Bob");
-        if(it != history.end())
+        if (!userName.empty())
         {
-            std::cout << "Your name is " << *it << std::endl;
+            response = "Your name is " + userName;
         }
         else
         {
-            std::cout << "can u tell me ur name agin" << std::endl;
+            response = "What's your name? Tell me!";
         }
         return true;
-    } 
+    }
+    else if (input.find("My name is") != std::string::npos)
+    {
+        size_t pos = input.find("My name is") + 10;
+        userName = input.substr(pos);
+        response = "Nice to meet you, " + userName + "!";
+        return true;
+    }
     else if (input.find("+") != std::string::npos || input.find("-") != std::string::npos || input.find("/") != std::string::npos || input.find("*") != std::string::npos)
     {
         response = calculate(input);
