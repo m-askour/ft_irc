@@ -8,7 +8,6 @@ int main(int ac, char **av)
         std::cout << "error input, put it like this ./ircserv <port> <password>" <<std::endl;
         return 1;
     }
-        int port = atoi(av[1]);
     int port = atoi(av[1]);
     if (port <= 0 || port > 65535)
     {
