@@ -19,7 +19,7 @@ equivalent)*/
 #include <string.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-
+#include <cstdlib>
 #include <sys/poll.h>
 #include <netdb.h>
 #include <arpa/inet.h>
@@ -39,16 +39,16 @@ private:
         std::string password;
         int socketfd;
         int port;
-        int backlog;// this is the nember of the client listen for 
         int client_fd;
-        int Maxclient_fd = 0;
+        nfds_t Maxclient_fd;
         bool is_multiple;        // flag to track mode
+        int backlog;// this is the nember of the client listen for 
         int client_count;
         socklen_t server_addrlen;
         socklen_t client_addrlen;
         struct sockaddr_in server_addr;
         struct sockaddr_in client_addr;
-        nfds_t nfds = 0;
+        nfds_t nfds;
 public:
     server();
     server(int hostname, int type, int protocole);
@@ -99,12 +99,9 @@ public:
     /*poll*/
     //manage connection new client connect/disconnect 
 
-    int connect_multiple_client(struct pollfd *pollfds, int Maxclient_fd, nfds_t nfds)
-    {
+    int connect_multiple_client(struct pollfd *pollfds, nfds_t Maxclient_fd, nfds_t nfds);
 
-    }
-
-
+    // int connect_multiple_client(struct pollfd *pollfds, nfds_t nfds);
     //4-close the server 
     /*close*/
     int server_close(int fd);
