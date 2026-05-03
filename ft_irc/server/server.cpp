@@ -4,7 +4,12 @@ server::server()
 }
 
 server::server(int hostname, int type, int protocole)
-    : hostname(hostname), type(type), protocole(protocole), backlog(Maxclient_fd) {}
+    : hostname(hostname),
+      type(type),
+      protocole(protocole),
+      Maxclient_fd(1024),
+      backlog(Maxclient_fd)
+{}
 server::server(const server &other)
 {
     this->hostname = other.hostname;
@@ -85,7 +90,7 @@ void server::socket_add(struct sockaddr_in *src, int port)
     src->sin_family = AF_INET;
     src->sin_port = htons(port);
     src->sin_addr.s_addr = inet_addr("127.0.0.1");
-    memset(&(src->sin_zero), 0, sizeof(src));
+    memset(src->sin_zero, 0, sizeof(src));
 }
 
 int server::server_bind(int socketfd, struct sockaddr_in *src)
@@ -122,7 +127,8 @@ int server::server_listen(int socketfd)
 void server::waiting_client_responce(int socketfd, struct sockaddr_in *client_addr, socklen_t client_addrlen, int listinign)
 {
     //this for multiple client 
-    int count = 0;
+    // int count = 0;
+   
     // Maxclient = socketfd + 1;
     //i need message if any client connect (new client connect and client disconnect)
 
@@ -151,6 +157,7 @@ void server::waiting_client_responce(int socketfd, struct sockaddr_in *client_ad
 int server::server_accept(int socketfd, struct sockaddr_in *client_addr, socklen_t client_addrlen, int listinign)
 {
     int client_fd;
+    (void)listinign;
     client_fd = accept(socketfd, (sockaddr *)&client_addr, &client_addrlen);
     if (client_fd < 0 || !check_password(client_fd))
     {
@@ -247,14 +254,14 @@ int server::close_listining(int listining)
     //     short events;
     //     short revents;
     // }
-int server::connect_multiple_client(struct pollfd *pollfds, int Maxclient_fd, nfds_t nfds)
+int server::connect_multiple_client(struct pollfd *pollfds, nfds_t Maxclient_fd, nfds_t nfds)
 {
     // Maxclient_fd = NUM_FDS; i don't know this what is do 
-    fd_set fd_creat;
+    // fd_set fd_creat;
     pollfds->fd = socketfd;
     pollfds-> events = POLLIN;
     pollfds->revents = 0;
-    int numfds = 1;
+    // int numfds = 1;
     while (true)
     {
         /* code */
@@ -268,21 +275,20 @@ int server::connect_multiple_client(struct pollfd *pollfds, int Maxclient_fd, nf
         for(size_t i = 0; i < nfds; i++)
         {
             int sock = pollfds[i].fd;
-            if (pollfds[i].revents & POLLIN)
+            if (pollfds[i].fd == socketfd)
             {
                 //new client
                 int new_client = accept(socketfd, (struct sockaddr *)&client_addr, &client_addrlen);
-                if(!check_password(new_client))
-                {
-                    close(new_client);
-                }
-                else
-                {
-                    //set the client 
-                    pollfds[nfds].fd = new_client;
-                    pollfds[nfds].events = POLLIN;
-                    nfds++;
-                }
+            if (nfds < Maxclient_fd)
+            {
+                pollfds[nfds].fd = new_client;
+                pollfds[nfds].events = POLLIN;
+                nfds++;
+            }
+            else
+            {
+                close(new_client); // too many clients
+            }
             }
             else
             {
@@ -304,7 +310,7 @@ int server::connect_multiple_client(struct pollfd *pollfds, int Maxclient_fd, nf
         }
 
     }
-    
+    return 0;
     // we have * POLLIN , * POLLOUT, *POLLPRI, *POLLRDHUP, *POLLERR, *POLLHUP, *POLLNVAL
 
 }
@@ -335,7 +341,7 @@ void server::snd_recv(int client_fd)
         // desplay the massage
         std::cout << "Received:" << std::string(buff, 0, receive_massage) << std::endl;
         // send the message
-        send(client_fd, buff, receive_massage + 1, 0);
+        send(client_fd, buff, receive_massage, 0);
     }
 }
 
