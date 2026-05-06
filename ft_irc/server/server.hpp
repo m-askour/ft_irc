@@ -55,6 +55,10 @@ public:
     server(const server &other);
     server &operator=(const server &other);
     ~server();
+
+
+    std::string getPassword() const;
+    std::string getServername() const;
     //this have all the proccess of the server 
     void start_server(int port, std::string password);
     //itape 1 creat a socket
@@ -99,7 +103,7 @@ public:
     /*poll*/
     //manage connection new client connect/disconnect 
 
-    int connect_multiple_client(struct pollfd *pollfds, nfds_t Maxclient_fd, nfds_t nfds);
+    int connect_multiple_client(struct pollfd *pollfds, nfds_t Maxclient_fd, nfds_t &nfds);
 
     // int connect_multiple_client(struct pollfd *pollfds, nfds_t nfds);
     //4-close the server 

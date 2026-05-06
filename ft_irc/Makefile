@@ -1,6 +1,6 @@
 c++ = g++
 c++flags = -Wall -Werror -Wextra -std=c++98
-name = Bureaucrat
+name = ft_irc
 files = main.cpp ./server/server.cpp
 
 all: $(name)

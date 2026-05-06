@@ -30,7 +30,14 @@ server &server::operator=(const server &other)
 server::~server()
 {
 }
-
+std::string server::getPassword() const
+{
+    return this->password;
+}
+std::string server::getServername() const
+{
+    return this-> 
+}
 void server::start_server(int port, std::string password)
 {
     this->port = port;
@@ -254,7 +261,7 @@ int server::close_listining(int listining)
     //     short events;
     //     short revents;
     // }
-int server::connect_multiple_client(struct pollfd *pollfds, nfds_t Maxclient_fd, nfds_t nfds)
+int server::connect_multiple_client(struct pollfd *pollfds, nfds_t Maxclient_fd, nfds_t &nfds)
 {
     // Maxclient_fd = NUM_FDS; i don't know this what is do 
     // fd_set fd_creat;
@@ -272,23 +279,23 @@ int server::connect_multiple_client(struct pollfd *pollfds, nfds_t Maxclient_fd,
             std::cout <<"error in the pool the multiple client " << std::endl;
             break;
         }
-        for(size_t i = 0; i < nfds; i++)
+        for(size_t i = 0; i < Maxclient_fd; i++)
         {
             int sock = pollfds[i].fd;
             if (pollfds[i].fd == socketfd)
             {
                 //new client
                 int new_client = accept(socketfd, (struct sockaddr *)&client_addr, &client_addrlen);
-            if (nfds < Maxclient_fd)
-            {
-                pollfds[nfds].fd = new_client;
-                pollfds[nfds].events = POLLIN;
-                nfds++;
-            }
-            else
-            {
-                close(new_client); // too many clients
-            }
+                if (nfds < Maxclient_fd && pollfds[i].revents & POLLIN)
+                {
+                    pollfds[nfds].fd = new_client;
+                    pollfds[nfds].events = POLLIN;
+                    nfds++;
+                }
+                else
+                {
+                    close(new_client); // too many clients
+                }
             }
             else
             {
@@ -299,6 +306,7 @@ int server::connect_multiple_client(struct pollfd *pollfds, nfds_t Maxclient_fd,
                 //client disconnectes if it's not resice nutiong
                 if (receive_massage <= 0)
                 {
+                    pollfds[i].fd = -1;
                     close(sock);
                     --i;  
                 }
