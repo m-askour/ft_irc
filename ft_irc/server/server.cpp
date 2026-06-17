@@ -9,7 +9,8 @@ server::server(int hostname, int type, int protocole)
       protocole(protocole),
       Maxclient_fd(1024),
       backlog(Maxclient_fd)
-{}
+{
+}
 server::server(const server &other)
 {
     this->hostname = other.hostname;
@@ -34,10 +35,10 @@ std::string server::getPassword() const
 {
     return this->password;
 }
-std::string server::getServername() const
-{
-    return this-> 
-}
+// std::string server::getServername() const
+// {
+//     return *this;
+// }
 void server::start_server(int port, std::string password)
 {
     this->port = port;
@@ -47,28 +48,27 @@ void server::start_server(int port, std::string password)
     server_bind(socketfd, &server_addr);
     int listeninig = server_listen(socketfd);
     this->listining = listeninig;
-    // waiting_client_responce(socketfd, &client_addr, client_addrlen, listeninig);//this logic just for one client 
+    // waiting_client_responce(socketfd, &client_addr, client_addrlen, listeninig);//this logic just for one client
     struct pollfd pollfds[Maxclient_fd];
 
-    
     pollfds[0].fd = socketfd;
     pollfds[0].events = POLLIN;
     pollfds[0].revents = 0;
-    connect_multiple_client(pollfds,Maxclient_fd, 1);//this for multiple client use pool
+    connect_multiple_client(pollfds, Maxclient_fd, this->nfds); // this for multiple client use pool
     server_close(socketfd);
 }
-int server::check_password(int client_fd) {
+int server::check_password(int client_fd)
+{
     char buff[Buffer_size];
     memset(buff, 0, Buffer_size);
     send(client_fd, "Password", 10, 0);
     int rec = recv(client_fd, buff, Buffer_size, 0);
-    if(rec < 0)
+    if (rec < 0)
         return 1;
     std::string recevid(buff, rec);
     recevid.erase(recevid.find_last_not_of("\r\n") + 1);
-    return(recevid == this->password);
+    return (recevid == this->password);
 }
-
 
 int server::socket_creat(int hostname, int type, int protocole)
 {
@@ -77,7 +77,7 @@ int server::socket_creat(int hostname, int type, int protocole)
     if (socketfd == -1)
     {
         std::cout << "can't creat a socket" << std::endl;
-        return(-1);
+        return (-1);
     }
     else
     {
@@ -106,7 +106,7 @@ int server::server_bind(int socketfd, struct sockaddr_in *src)
     if (n_bind < 0)
     {
         std::cout << "error binding can't successe" << std::endl;
-        return(-1);
+        return (-1);
     }
     else
     {
@@ -123,7 +123,7 @@ int server::server_listen(int socketfd)
     if (n_listen < 0)
     {
         std::cout << "error listitnig can't successe";
-        return(-1);
+        return (-1);
     }
     else
     {
@@ -133,21 +133,20 @@ int server::server_listen(int socketfd)
 }
 void server::waiting_client_responce(int socketfd, struct sockaddr_in *client_addr, socklen_t client_addrlen, int listinign)
 {
-    //this for multiple client 
-    // int count = 0;
-   
+    // this for multiple client
+    //  int count = 0;
+
     // Maxclient = socketfd + 1;
-    //i need message if any client connect (new client connect and client disconnect)
+    // i need message if any client connect (new client connect and client disconnect)
 
     while (true)
     {
         std::cout << "waiting for client..." << std::endl;
-        //the client remot name as a host
-        // char host[NI_MAXHOST];
-        
+        // the client remot name as a host
+        //  char host[NI_MAXHOST];
+
         // //the server information that the client connect for ;
         // char serv[NI_MAXSERV];
-
 
         // int sockname = getnameinfo((sockaddr *)&client_addr, sizeof(client_addr), host, NI_MAXHOST, serv, NI_MAXSERV); // this tell u just the information abou the server like the ip and the port
         // if (sockname == 0)
@@ -155,7 +154,7 @@ void server::waiting_client_responce(int socketfd, struct sockaddr_in *client_ad
         //     std::cout<< "connect on this port :" << serv << std::endl;
         // }
 
-        int client_fd = server_accept(socketfd, client_addr, client_addrlen, listinign);                 // this use to know the client comme to connect to the server
+        int client_fd = server_accept(socketfd, client_addr, client_addrlen, listinign); // this use to know the client comme to connect to the server
         snd_recv(client_fd);
         close(client_fd);
     }
@@ -170,7 +169,7 @@ int server::server_accept(int socketfd, struct sockaddr_in *client_addr, socklen
     {
         std::cout << "error accepting client connection can't successe";
         close(socketfd);
-        return(-1);
+        return (-1);
     }
     else
     {
@@ -185,11 +184,11 @@ int server::close_listining(int listining)
     close(listining);
     return 0;
 }
-//we can use the sellect() to connect multiple client's (use inside the threads)
+// we can use the sellect() to connect multiple client's (use inside the threads)
 
 // int server::connect_multiple_client(struct pollfd *pollfds, int Maxclient_fd, nfds_t nfds, int listening)
 // {
-//     // Maxclient_fd = NUM_FDS; i don't know this what is do 
+//     // Maxclient_fd = NUM_FDS; i don't know this what is do
 //     fd_set fd_creat;
 //     FD_ZERO(&fd_creat); //this for clear the file descripter
 //     FD_SET(listening, &fd_creat);
@@ -200,7 +199,7 @@ int server::close_listining(int listining)
 //         // int pool_client = poll(struct poolfd *fds, nfds_t nfds, int timeout);
 //         int sellect_client = select( Maxclient_fd + 1, &nfds, nullptr, nullptr, nullptr);
 //         if (sellect_client == -1)
-//         { 
+//         {
 //             std::cout <<"error in the pool the multiple client " << std::endl;
 //             break;
 //         }
@@ -216,11 +215,10 @@ int server::close_listining(int listining)
 //                 {
 //                     close(new_client);
 //                 }
-//                 //set this thread use 
+//                 //set this thread use
 //                 FD_SET(new_client, &fd_creat);
 //                 std::cout << "the new client connect";
 //                 send(new_client, "hello new client",16 , 0);
-
 
 //             }
 //             else
@@ -251,78 +249,80 @@ int server::close_listining(int listining)
 //         }
 
 //     }
-    
+
 //     // we have * POLLIN , * POLLOUT, *POLLPRI, *POLLRDHUP, *POLLERR, *POLLHUP, *POLLNVAL
 
 // }
-//pool the mltiple client 
-    // struct pollfd{
-    //     int fd;
-    //     short events;
-    //     short revents;
-    // }
+// pool the mltiple client
+// struct pollfd{
+//     int fd;
+//     short events;
+//     short revents;
+// }
 int server::connect_multiple_client(struct pollfd *pollfds, nfds_t Maxclient_fd, nfds_t &nfds)
 {
-    // Maxclient_fd = NUM_FDS; i don't know this what is do 
-    // fd_set fd_creat;
-    pollfds->fd = socketfd;
-    pollfds-> events = POLLIN;
-    pollfds->revents = 0;
-    // int numfds = 1;
+    nfds = 1;
+    pollfds[0].fd = socketfd;
+    pollfds[0].events = POLLIN;
+    pollfds[0].revents = 0;
+
     while (true)
     {
-        /* code */
-        // int pool_client = poll(struct poolfd *fds, nfds_t nfds, int timeout);
         int poll_client = poll(pollfds, nfds, -1);
         if (poll_client == -1)
-        { 
-            std::cout <<"error in the pool the multiple client " << std::endl;
+        {
+            std::cout << "poll error" << std::endl;
             break;
         }
-        for(size_t i = 0; i < Maxclient_fd; i++)
+
+        for (nfds_t i = 0; i < nfds; ++i)
         {
-            int sock = pollfds[i].fd;
+            if (pollfds[i].fd < 0)
+                continue;
+
             if (pollfds[i].fd == socketfd)
             {
-                //new client
+                if (!(pollfds[i].revents & POLLIN))
+                    continue;
+
                 int new_client = accept(socketfd, (struct sockaddr *)&client_addr, &client_addrlen);
-                if (nfds < Maxclient_fd && pollfds[i].revents & POLLIN)
+                if (new_client < 0)
+                    continue;
+
+                if (nfds < Maxclient_fd)
                 {
+                    client_fds.push_back(new_client);
                     pollfds[nfds].fd = new_client;
                     pollfds[nfds].events = POLLIN;
                     nfds++;
                 }
                 else
                 {
-                    close(new_client); // too many clients
+                    close(new_client);
                 }
             }
-            else
+            else if (pollfds[i].revents & POLLIN)
             {
                 char buff[Buffer_size];
-                memset(buff, 0, 4096);
-            int receive_massage = recv(sock, buff, Buffer_size, 0);
+                memset(buff, 0, Buffer_size);
+                int received = recv(pollfds[i].fd, buff, Buffer_size, 0);
 
-                //client disconnectes if it's not resice nutiong
-                if (receive_massage <= 0)
+                if (received <= 0)
                 {
+                    close(pollfds[i].fd);
+                    client_fds.erase(std::remove(client_fds.begin(), client_fds.end(), pollfds[i].fd), client_fds.end());
                     pollfds[i].fd = -1;
-                    close(sock);
-                    --i;  
                 }
                 else
                 {
-                    send(sock, buff, receive_massage, 0);
+                    send(pollfds[i].fd, buff, received, 0);
                 }
             }
         }
-
     }
+
     return 0;
-    // we have * POLLIN , * POLLOUT, *POLLPRI, *POLLRDHUP, *POLLERR, *POLLHUP, *POLLNVAL
-
 }
-
 
 void server::snd_recv(int client_fd)
 {
@@ -359,7 +359,7 @@ int server::server_close(int fd)
     if (n_close < 0)
     {
         std::cout << "error of the close " << std::endl;
-        return(-1);
+        return (-1);
     }
     else
     {

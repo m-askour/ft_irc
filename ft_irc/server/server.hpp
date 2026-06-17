@@ -24,6 +24,8 @@ equivalent)*/
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <vector>
+#include<map>
+#include <algorithm>
 #define Buffer_size 4096
 
 class server
@@ -44,6 +46,9 @@ private:
         bool is_multiple;        // flag to track mode
         int backlog;// this is the nember of the client listen for 
         int client_count;
+        
+        std::map<int, std::string> client_buff;
+        std::vector<int> client_fds;
         socklen_t server_addrlen;
         socklen_t client_addrlen;
         struct sockaddr_in server_addr;
@@ -104,6 +109,8 @@ public:
     //manage connection new client connect/disconnect 
 
     int connect_multiple_client(struct pollfd *pollfds, nfds_t Maxclient_fd, nfds_t &nfds);
+    //any connecion i need to put it in some where like stor it
+
 
     // int connect_multiple_client(struct pollfd *pollfds, nfds_t nfds);
     //4-close the server 
