@@ -40,18 +40,13 @@ class client
 private:
     int client_fd;
 
-    
     std::string password;
     std::string username;
     std::string nickname;
     std::string realname;
     std::string input_buff;
     bool is_authenticated;
-    bool is_connected;
     bool is_registered;
-    bool is_operator;
-    // int server_port;
-
 public:
     client();
     client(int fd);
@@ -65,7 +60,6 @@ public:
     void set_realname(const std::string &reln);
     // // status checks
     bool is_authenticated_client() const;
-    bool is_connected_client() const;
     bool is_registered_client() const;
     bool is_nickname_set_client() const;
     bool is_username_set_client() const;

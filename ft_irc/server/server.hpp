@@ -27,7 +27,7 @@ equivalent)*/
 #include<map>
 #include <algorithm>
 #define Buffer_size 4096
-
+#include<./client/client.hpp>
 class server
 {
 private:
@@ -47,8 +47,7 @@ private:
         int backlog;// this is the nember of the client listen for 
         int client_count;
         
-        std::map<int, std::string> client_buff;
-        std::vector<int> client_fds;
+        std::map<int, client> clients;
         socklen_t server_addrlen;
         socklen_t client_addrlen;
         struct sockaddr_in server_addr;
